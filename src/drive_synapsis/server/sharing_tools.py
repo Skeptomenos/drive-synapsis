@@ -1,7 +1,7 @@
 """Sharing and permission MCP tools."""
 from .main import mcp, get_client
 from .managers import search_manager
-from utils.errors import handle_http_error, format_error, GDriveError
+from ..utils.errors import handle_http_error, format_error, GDriveError
 import json
 
 try:

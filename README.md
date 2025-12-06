@@ -291,34 +291,118 @@ MCP tools organized by domain:
 
 ### 1. Install
 
-See [INSTALLATION.md](INSTALLATION.md) for complete setup guide.
-
-**TL;DR:**
 ```bash
-# Install dependencies
-uv sync  # or: pip install -r requirements.txt
+# Clone the repository
+git clone https://github.com/your-repo/drive-synapsis.git
+cd drive-synapsis
 
-# Authenticate (opens browser)
-uv run src/drive_synapsis/main_server.py
+# Install with uv (recommended)
+uv pip install -e .
+
+# Or with pip
+pip install -e .
 ```
 
-### 2. Configure Gemini CLI
+### 2. Set Up Google Cloud Credentials (BYOK)
+
+This server uses a **"Bring Your Own Keys"** model. You need to create your own Google Cloud credentials:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the following APIs:
+   - Google Drive API
+   - Google Docs API
+   - Google Sheets API
+4. Create OAuth 2.0 credentials (Desktop application)
+5. Download the credentials as `client_secret.json`
+6. Place `client_secret.json` in the project root
+
+> See [INSTALLATION.md](INSTALLATION.md) for detailed step-by-step instructions.
+
+### 3. Authenticate
+
+```bash
+# Run the server once to complete OAuth flow
+uv run drive-synapsis
+# A browser window will open for authentication
+# After authenticating, token.json will be created
+```
+
+### 4. Configure Your AI Client
+
+Run the configuration generator to get ready-to-use JSON for your client:
+
+```bash
+uv run drive-synapsis-config
+```
+
+This will output configuration for all supported clients:
+
+<details>
+<summary><strong>Claude Desktop / Claude Code</strong></summary>
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "drive-synapsis": {
+      "command": "/path/to/uv",
+      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"],
+      "env": {}
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><strong>VS Code Extensions (Copilot, Continue, etc.)</strong></summary>
+
+Add to your extension's MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "drive-synapsis": {
+      "command": "/path/to/uv",
+      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><strong>Gemini CLI / OpenCode</strong></summary>
 
 Add to `~/.gemini/settings.json`:
 
 ```json
 {
-  "mcpServers": {
-    "gdrive": {
+  "mcpServers": [
+    {
+      "name": "drive-synapsis",
       "command": "/path/to/uv",
-      "args": ["run", "--quiet", "/path/to/drive-synapsis/src/drive_synapsis/main_server.py"],
-      "env": {"PYTHONUNBUFFERED": "1"}
+      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"]
     }
-  }
+  ]
 }
 ```
+</details>
 
-### 3. Use!
+### 5. Docker (Alternative)
+
+```bash
+# Create credentials directory
+mkdir credentials
+cp client_secret.json token.json credentials/
+
+# Build and run
+docker compose up -d
+```
+
+### 6. Use!
 
 ```
 Search my Drive for "Project Plan"
@@ -439,6 +523,28 @@ Contributions welcome! The modular architecture makes it easy to add features:
 ## 📜 License
 
 MIT License - see LICENSE file for details
+
+---
+
+## ⚠️ Known Limitations
+
+To ensure the best experience, please be aware of the current limitations:
+
+1.  **Authentication**:
+    - Requires a browser-based OAuth flow for the initial setup.
+    - For headless environments (VPS, remote servers), you must generate `token.json` locally and copy it to the server.
+
+2.  **Conversion Fidelity**:
+    - **Google Docs**: Complex elements like drawings, equations, heavily nested tables, and proprietary add-ons may not convert perfectly to Markdown. Images are currently not extracted.
+    - **Google Sheets**: Exports are CSV-based. Charts, pivot tables, images, and cell formatting (colors, fonts) are not preserved.
+
+3.  **Synchronization**:
+    - **Not Real-Time**: Sync happens on-demand via commands, not continuously in the background.
+    - **Conflict Resolution**: Uses a "lock-safe" approach (warns on conflict) rather than sophisticated three-way content merging.
+
+4.  **Performance & Quotas**:
+    - **Large Files**: Very large documents may hit token window limits of your AI model.
+    - **Rate Limits**: Heavy usage (e.g., bulk uploading 100+ files) may trigger Google API rate limiting.
 
 ---
 

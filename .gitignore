@@ -35,6 +35,12 @@ credentials.json
 gemini-settings.json
 gdrive_map.json
 
+# Credentials directory (for Docker)
+credentials/
+
+# Sync data
+data/
+
 # Node/JS (if accidental or mixed)
 node_modules/
 package-lock.json

@@ -1,6 +1,6 @@
 """Search operations mixin for GDriveClient."""
 from typing import Optional, Any
-from utils.constants import DEFAULT_SNIPPET_LENGTH, DEFAULT_MAX_WORKERS, GOOGLE_MIME_TYPES
+from ..utils.constants import DEFAULT_SNIPPET_LENGTH, DEFAULT_MAX_WORKERS, GOOGLE_MIME_TYPES
 import concurrent.futures
 
 

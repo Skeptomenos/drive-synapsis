@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from gdrive_client import GDriveClient
+from .client import GDriveClient
 import traceback
 import json
 import os
@@ -9,7 +9,7 @@ import re
 import difflib
 from collections import deque
 from typing import Optional
-from utils.constants import (
+from .utils.constants import (
     DEFAULT_SEARCH_LIMIT,
     SCORE_TITLE_MATCH,
     SCORE_CONTENT_MATCH,
@@ -18,7 +18,7 @@ from utils.constants import (
 )
 
 # Initialize MCP Server
-mcp = FastMCP("Google Drive MCP")
+mcp = FastMCP("Drive Synapsis")
 
 # Global client, initialized lazily or on startup
 client: Optional[GDriveClient] = None
@@ -1419,6 +1419,10 @@ def download_doc_tabs(local_dir: str, file_id: str) -> str:
         return f"Error downloading tabs: {str(e)}"
 
 
-if __name__ == "__main__":
-    # If run directly settings.json should point to `uv run src/server.py`
+def main():
+    """Entry point for the Drive Synapsis MCP server."""
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()

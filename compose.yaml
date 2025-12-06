@@ -1,0 +1,24 @@
+# Drive Synapsis - Docker Compose Configuration
+#
+# Usage:
+#   1. Place your client_secret.json and token.json in ./credentials/
+#   2. Run: docker compose up
+#
+# For first-time authentication, you'll need to run the auth flow locally first
+# to generate the token.json file.
+
+services:
+  drive-synapsis:
+    build: .
+    container_name: drive-synapsis
+    stdin_open: true # Required for MCP stdio communication
+    tty: true
+    volumes:
+      # Mount credentials directory
+      - ./credentials:/app/credentials:ro
+      # Optional: Mount for sync map persistence
+      - ./data:/app/data
+    environment:
+      # Path to credentials inside container
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/client_secret.json
+    restart: unless-stopped

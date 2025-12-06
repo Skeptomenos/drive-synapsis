@@ -1,6 +1,6 @@
 """Base client with Google API service initialization."""
 from googleapiclient.discovery import build
-from auth import get_creds
+from ..auth import get_creds
 from typing import Any
 
 

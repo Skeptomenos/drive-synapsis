@@ -1,10 +1,10 @@
 """MCP Server initialization and entry point."""
 from fastmcp import FastMCP
-from client import GDriveClient
+from ..client import GDriveClient
 from typing import Optional
 
 # Initialize MCP Server
-mcp = FastMCP("Google Drive MCP")
+mcp = FastMCP("Drive Synapsis")
 
 # Global client, initialized lazily
 _client: Optional[GDriveClient] = None

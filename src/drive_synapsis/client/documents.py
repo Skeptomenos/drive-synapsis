@@ -1,7 +1,7 @@
 """Document operations mixin for GDriveClient."""
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
-from html_converter import convert_html_to_markdown
-from utils.constants import DEFAULT_SHEET_RANGE, EXPORT_MIME_TYPES
+from ..html_converter import convert_html_to_markdown
+from ..utils.constants import DEFAULT_SHEET_RANGE, EXPORT_MIME_TYPES
 from typing import Any, Optional
 import io
 import json

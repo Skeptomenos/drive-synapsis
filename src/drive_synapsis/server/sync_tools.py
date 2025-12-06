@@ -1,7 +1,7 @@
 """Sync-related MCP tools for local file synchronization."""
 from .main import mcp, get_client
 from .managers import search_manager, sync_manager
-from utils.errors import (
+from ..utils.errors import (
     handle_http_error, format_error, GDriveError,
     LinkNotFoundError, LocalFileNotFoundError, SyncConflictError
 )

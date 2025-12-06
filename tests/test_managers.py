@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "managers",
-    os.path.join(os.path.dirname(__file__), '../src/server/managers.py')
+    os.path.join(os.path.dirname(__file__), '../src/drive_synapsis/server/managers.py')
 )
 managers_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(managers_module)
