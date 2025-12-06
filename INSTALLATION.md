@@ -257,6 +257,46 @@ If this works, your installation is complete! 🎉
 - Ensure it's in the root project directory (same level as `pyproject.toml`)
 - Check file permissions (must be readable)
 
+## Enterprise Deployment (Google Workspace)
+
+If you are deploying this within a company using Google Workspace, you can avoid the "Testing" mode limitations (7-day token expiry, user limits) by configuring the app as **Internal**.
+
+### 1. Configure "Internal" User Type
+
+1.  In Google Cloud Console, go to **OAuth consent screen**.
+2.  Click **Edit App**.
+3.  Change User Type from **External** to **Internal**.
+    *   *Note: This option is only available if you are part of a Google Workspace organization.*
+4.  Save changes.
+
+**Benefits:**
+*   **No User Cap**: Any user in your organization (`@yourcompany.com`) can sign in.
+*   **No Whitelist**: You don't need to add individual email addresses.
+*   **No 7-Day Expiry**: Refresh tokens last indefinitely (or until revoked).
+
+### 2. Credential Distribution Strategy
+
+To share the tool with your team, follow this security best practice:
+
+*   **Share `client_secret.json` (The App Identity)**:
+    *   It is generally acceptable to distribute this file internally (e.g., in a private Git repo or internal shared drive).
+    *   This file identifies the *application*, not a user.
+    *   **Do NOT** commit this to a public repository.
+
+*   **Do NOT Share `token.json` (The User Identity)**:
+    *   This file contains the *access tokens* for a specific user.
+    *   **Each user must generate their own `token.json`**.
+
+### 3. User Onboarding Workflow
+
+1.  **Distribute**: Provide the code/container and the `client_secret.json` to users.
+2.  **Authenticate**: Instruct each user to run the one-time setup command:
+    ```bash
+    uv run drive-synapsis
+    ```
+3.  **Sign In**: They will sign in with their corporate Google account.
+4.  **Ready**: A unique `token.json` is created on their machine.
+
 ## Next Steps
 
 Now that you've successfully installed the server, check out the [Usage Guide](USAGE.md) to learn how to use all the available features!
