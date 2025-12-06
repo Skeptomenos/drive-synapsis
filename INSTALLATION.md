@@ -85,191 +85,88 @@ Since your app is in testing mode, you need to whitelist users:
 
 Your Google Cloud setup is now complete! ✅
 
-## Step 2: Install Dependencies
+## Step 2: Install Package
 
-### Option A: Using uv (Recommended)
+### Using uv (Recommended)
 
-**uv** is a fast, modern Python package manager that provides better performance and dependency resolution.
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-repo/drive-synapsis.git
+    cd drive-synapsis
+    ```
 
-#### Install uv
+2.  Install in editable mode:
+    ```bash
+    uv pip install -e .
+    ```
 
-**macOS/Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+### Using pip
 
-**Homebrew (macOS):**
-```bash
-brew install uv
-```
+1.  Clone and navigate:
+    ```bash
+    git clone https://github.com/your-repo/drive-synapsis.git
+    cd drive-synapsis
+    ```
 
-**Windows:**
-```powershell
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
+2.  Create virtual environment:
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate  # Windows: .venv\Scripts\activate
+    ```
 
-#### Sync Project Dependencies
+3.  Install:
+    ```bash
+    pip install -e .
+    ```
 
-Navigate to the project directory and run:
+## Step 3: Authenticate
 
-```bash
-cd /path/to/drive-synapsis
-uv sync
-```
-
-This will:
-- Create a virtual environment in `.venv/`
-- Install all required dependencies
-- Lock dependency versions
-
-### Option B: Using pip
-
-If you prefer using standard Python tooling:
-
-#### Create Virtual Environment
+Run the server once to trigger the OAuth flow:
 
 ```bash
-cd /path/to/drive-synapsis
-python3 -m venv .venv
+uv run drive-synapsis
+# or if using pip/venv:
+drive-synapsis
 ```
 
-#### Activate Virtual Environment
+A browser window will open. detailed steps:
+1.  Sign in with your Google account.
+2.  If you see "App isn't verified", click **Advanced** -> **Go to [App Name] (unsafe)**.
+3.  Grant the requested permissions.
+4.  A `token.json` file will be created in your project root.
 
-**macOS/Linux:**
+## Step 4: Configure Your Client
+
+We provide a helper tool to generate the configuration for you.
+
+Run:
 ```bash
-source .venv/bin/activate
+uv run drive-synapsis-config
 ```
 
-**Windows:**
-```powershell
-.venv\Scripts\activate
-```
+This will print the exact JSON configuration you need for:
+-   **Claude Desktop / Claude Code**
+-   **VS Code (Copilot, Continue, etc.)**
+-   **Gemini CLI / OpenCode**
 
-#### Install Dependencies
+### Manual Configuration (Gemini CLI)
 
-```bash
-pip install fastmcp google-api-python-client google-auth-oauthlib python-dotenv
-```
-
-## Step 3: Initial Authentication
-
-Before you can use the MCP server with Gemini CLI, you must authenticate manually to generate a token.
-
-### Run Authentication Flow
-
-**Using uv:**
-```bash
-uv run src/drive_synapsis/main_server.py
-```
-
-**Using pip (with activated venv):**
-```bash
-python src/drive_synapsis/main_server.py
-```
-
-### Complete Authorization
-
-1. A browser window will automatically open
-2. Sign in with your Google account (must be a test user)
-3. You may see a warning: **"App isn't verified"**
-   - Click **"Advanced"**
-   - Click **"Go to [App Name] (unsafe)"**
-4. Review and accept the requested permissions
-5. You should see a success message in your browser
-6. A `token.json` file will be created in your project directory
-
-### Stop the Server
-
-Press `Ctrl+C` in your terminal to stop the server.
-
-> [!NOTE]
-> The `token.json` file contains your authentication credentials. Keep it secure and do not commit it to version control.
-
-## Step 4: Configure Gemini CLI
-
-To use this MCP server with Gemini CLI, you need to add it to your MCP configuration.
-
-### Locate MCP Configuration File
-
-The configuration file is typically located at:
-- **macOS/Linux**: `~/.gemini/settings.json`
-- **Windows**: `%USERPROFILE%\.gemini\settings.json`
-
-### Add Server Configuration
-
-Edit your configuration file and add the `gdrive` server:
+Add to `~/.gemini/settings.json`:
 
 ```json
 {
-  "mcpServers": {
-    "gdrive": {
+  "mcpServers": [
+    {
+      "name": "drive-synapsis",
       "command": "/path/to/uv",
       "args": [
         "run",
-        "--quiet",
-        "/absolute/path/to/drive-synapsis/src/drive_synapsis/main_server.py"
-      ],
-      "env": {
-        "PYTHONUNBUFFERED": "1"
-      }
+        "--directory",
+        "/absolute/path/to/drive-synapsis",
+        "drive-synapsis"
+      ]
     }
-  }
-}
-```
-
-### Find Correct Paths
-
-**Find uv path:**
-```bash
-which uv
-```
-
-**Find project path:**
-```bash
-cd /path/to/drive-synapsis
-pwd
-```
-
-### Example Configuration
-
-```json
-{
-  "mcpServers": {
-    "gdrive": {
-      "command": "/opt/homebrew/bin/uv",
-      "args": [
-        "run",
-        "--quiet",
-        "/Users/davidhelmus/Repos/drive-synapsis/src/drive_synapsis/main_server.py"
-      ],
-      "env": {
-        "PYTHONUNBUFFERED": "1"
-      }
-    }
-  }
-}
-```
-
-> [!IMPORTANT]
-> Always use **absolute paths** in the configuration. Relative paths will not work.
-
-### Configuration for pip Users
-
-If you're using pip instead of uv:
-
-```json
-{
-  "mcpServers": {
-    "gdrive": {
-      "command": "/path/to/.venv/bin/python",
-      "args": [
-        "/absolute/path/to/drive-synapsis/src/drive_synapsis/main_server.py"
-      ],
-      "env": {
-        "PYTHONUNBUFFERED": "1"
-      }
-    }
-  }
+  ]
 }
 ```
 

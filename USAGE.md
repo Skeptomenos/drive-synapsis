@@ -748,7 +748,7 @@ How do I use the update_google_doc tool?
 
 **Debug authentication:**
 - Verify `token.json` exists
-- Re-run authentication: `uv run src/server.py`
+- Re-run authentication: `uv run drive-synapsis`
 - Check Google Cloud Console permissions
 
 ## Example Workflows
