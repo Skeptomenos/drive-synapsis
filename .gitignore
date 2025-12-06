@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.mypy_cache/
+
+# Mac
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Project Specific - Secrets & Config
+.env
+token.json
+client_secret.json
+credentials.json
+gemini-settings.json
+gdrive_map.json
+
+# Node/JS (if accidental or mixed)
+node_modules/
+package-lock.json
+
+# Builds
+*.spec
+dist/
+build/
+*.egg-info/

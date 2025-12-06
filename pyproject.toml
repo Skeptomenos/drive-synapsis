@@ -1,0 +1,17 @@
+[project]
+name = "drive-synapsis"
+version = "0.2.0"
+description = "Drive Synapsis - Google Drive MCP Server for AI Assistants"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "google-api-python-client",
+    "google-auth-oauthlib",
+    "python-dotenv",
+]
+
+[project.scripts]
+drive-synapsis = "drive_synapsis:mcp"
+
+[tool.uv]
+# Optimization for uv
