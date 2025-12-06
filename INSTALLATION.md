@@ -63,14 +63,21 @@ Enable the following APIs for your project:
 
 ### 1.5 Add Test Users
 
-Since your app is in testing mode, you need to whitelist users:
+Since your app is likely just for you or your team, you will keep it in **"Testing"** mode. This avoids Google's strict verification process but requires you to explicitly list who can use the app.
 
 1. Click **"Add Users"**
-2. Enter your Google email address
+2. Enter your Google email address (and any others who will use this server)
 3. Click **"Add"** → **"Save and Continue"**
 
+> [!NOTE]
+> **What implies "Testing Mode"?**
+> Google Cloud apps start in "Testing" mode. This means the app is not verified by Google for public use.
+> *   **Pros**: Free, instant setup, no verification review.
+> *   **Cons**: Only users you explicitly "whitelist" (add to the list above) can sign in. The token expires every 7 days (requiring re-login).
+> *   **Why we use it**: For a personal or internal tool like this, "Testing" mode is the standard approach. "Production" mode requires a weeks-long security review process.
+
 > [!IMPORTANT]
-> Only users added as test users can authenticate with your app while it's in testing mode.
+> If you see "Access Blocked: App has not completed the Google verification process", it usually means the user trying to sign in was NOT added to this list.
 
 ### 1.6 Create OAuth Credentials
 
