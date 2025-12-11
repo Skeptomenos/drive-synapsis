@@ -15,8 +15,12 @@ SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets'
 ]
 
-CREDENTIALS_FILE = os.path.join(os.getcwd(), 'client_secret.json')
-TOKEN_FILE = os.path.join(os.getcwd(), 'token.json')
+CREDENTIALS_DIR = os.path.expanduser('~/.drive-synapsis')
+if not os.path.exists(CREDENTIALS_DIR):
+    os.makedirs(CREDENTIALS_DIR)
+
+CREDENTIALS_FILE = os.path.join(CREDENTIALS_DIR, 'client_secret.json')
+TOKEN_FILE = os.path.join(CREDENTIALS_DIR, 'token.json')
 
 def get_creds():
     """Shows basic usage of the Drive v3 API.

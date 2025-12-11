@@ -8,6 +8,7 @@ dependencies = [
     "google-api-python-client",
     "google-auth-oauthlib",
     "python-dotenv",
+    "uvicorn",
 ]
 
 [project.scripts]

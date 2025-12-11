@@ -396,6 +396,7 @@ dependencies = [
     { name = "google-api-python-client" },
     { name = "google-auth-oauthlib" },
     { name = "python-dotenv" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -404,6 +405,7 @@ requires-dist = [
     { name = "google-api-python-client" },
     { name = "google-auth-oauthlib" },
     { name = "python-dotenv" },
+    { name = "uvicorn" },
 ]
 
 [[package]]

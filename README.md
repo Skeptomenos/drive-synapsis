@@ -315,88 +315,37 @@ This server uses a **"Bring Your Own Keys"** model. You need to create your own 
    - Google Sheets API
 4. Create OAuth 2.0 credentials (Desktop application)
 5. Download the credentials as `client_secret.json`
-6. Place `client_secret.json` in the project root
+6. Create `~/.drive-synapsis/` and move `client_secret.json` there:
+   ```bash
+   mkdir -p ~/.drive-synapsis
+   mv ~/Downloads/client_secret.json ~/.drive-synapsis/
+   ```
 
 > See [INSTALLATION.md](INSTALLATION.md) for detailed step-by-step instructions.
 
-### 3. Authenticate
+### 3. Run the Setup Wizard (Recommended)
 
-```bash
-# Run the server once to complete OAuth flow
-uv run drive-synapsis
-# A browser window will open for authentication
-# After authenticating, token.json will be created
-```
-
-### 4. Configure Your AI Client
-
-Run the configuration generator to get ready-to-use JSON for your client:
+Run the interactive wizard to set up credentials, authenticate, and configure your AI client (Gemini CLI, Claude Code, OpenCode) in one step:
 
 ```bash
 uv run drive-synapsis-config
 ```
 
-This will output configuration for all supported clients:
+The wizard will guide you to:
+1.  Import your `client_secret.json`.
+2.  Authenticate with Google.
+3.  Automatically configure your chosen AI assistant.
 
-<details>
-<summary><strong>Claude Desktop / Claude Code</strong></summary>
+### 4. Manual Setup (Alternative)
 
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "drive-synapsis": {
-      "command": "/path/to/uv",
-      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"],
-      "env": {}
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><strong>VS Code Extensions (Copilot, Continue, etc.)</strong></summary>
-
-Add to your extension's MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "drive-synapsis": {
-      "command": "/path/to/uv",
-      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"]
-    }
-  }
-}
-```
-</details>
-
-<details>
-<summary><strong>Gemini CLI / OpenCode</strong></summary>
-
-Add to `~/.gemini/settings.json`:
-
-```json
-{
-  "mcpServers": [
-    {
-      "name": "drive-synapsis",
-      "command": "/path/to/uv",
-      "args": ["run", "--directory", "/path/to/drive-synapsis", "drive-synapsis"]
-    }
-  ]
-}
-```
-</details>
+If you prefer to configure manually, follow the steps in [INSTALLATION.md](INSTALLATION.md).
 
 ### 5. Docker (Alternative)
 
 ```bash
 # Create credentials directory
 mkdir credentials
-cp client_secret.json token.json credentials/
+cp ~/.drive-synapsis/client_secret.json ~/.drive-synapsis/token.json credentials/
 
 # Build and run
 docker compose up -d

@@ -1,0 +1,10 @@
+# Workstreams Directory
+
+Place workstream files here for parallel work contexts.
+See anamnesis/templates/workstream.md for template.
+
+Example workstreams:
+- main.md (primary objective)
+- feature-auth.md (authentication feature)
+- bugfix-123.md (bug investigation)
+- explore-perf.md (performance exploration)

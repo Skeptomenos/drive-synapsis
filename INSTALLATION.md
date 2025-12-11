@@ -88,7 +88,11 @@ Since your app is likely just for you or your team, you will keep it in **"Testi
 5. Click **"Create"**
 6. Click **"Download JSON"** to download the credentials file
 7. **Rename** the downloaded file to `client_secret.json`
-8. **Move** `client_secret.json` to the root directory of this project
+8. **Create** the directory `~/.drive-synapsis/` and **move** `client_secret.json` there.
+   ```bash
+   mkdir -p ~/.drive-synapsis
+   mv ~/Downloads/client_secret.json ~/.drive-synapsis/
+   ```
 
 Your Google Cloud setup is now complete! ✅
 
@@ -126,66 +130,30 @@ Your Google Cloud setup is now complete! ✅
     pip install -e .
     ```
 
-## Step 3: Authenticate
+## Step 3: Run Setup Wizard
 
-Run the server once to trigger the OAuth flow:
-
-```bash
-uv run drive-synapsis
-# or if using pip/venv:
-drive-synapsis
-```
-
-A browser window will open. detailed steps:
-1.  Sign in with your Google account.
-2.  If you see "App isn't verified", click **Advanced** -> **Go to [App Name] (unsafe)**.
-3.  Grant the requested permissions.
-4.  A `token.json` file will be created in your project root.
-
-## Step 4: Configure Your Client
-
-We provide a helper tool to generate the configuration for you.
+We provide an interactive wizard to automate the rest of the setup (credentials, authentication, and client configuration).
 
 Run:
 ```bash
 uv run drive-synapsis-config
 ```
 
-This will print the exact JSON configuration you need for:
--   **Claude Desktop / Claude Code**
--   **VS Code (Copilot, Continue, etc.)**
--   **Gemini CLI / OpenCode**
+The wizard will:
+1.  Ask for the path to your downloaded `client_secret.json`.
+2.  Move it to the secure directory `~/.drive-synapsis/`.
+3.  Launch the browser to authenticate you with Google.
+4.  Automatically update the configuration file for your chosen AI client (Gemini CLI, Claude Code, or OpenCode).
 
-### Manual Configuration (Gemini CLI)
+## Step 4: Verify Installation
 
-Add to `~/.gemini/settings.json`:
+### Restart Client
 
-```json
-{
-  "mcpServers": [
-    {
-      "name": "drive-synapsis",
-      "command": "/path/to/uv",
-      "args": [
-        "run",
-        "--directory",
-        "/absolute/path/to/drive-synapsis",
-        "drive-synapsis"
-      ]
-    }
-  ]
-}
-```
-
-## Step 5: Verify Installation
-
-### Restart Gemini CLI
-
-After updating the configuration, restart your Gemini CLI for changes to take effect.
+After the wizard completes, restart your AI client (Gemini CLI, Claude Code, etc.) for changes to take effect.
 
 ### Test Connection
 
-In the Gemini CLI, try a simple command:
+In your AI assistant, try a simple command:
 
 ```
 List the available MCP tools
@@ -210,7 +178,7 @@ If this works, your installation is complete! 🎉
 **Problem**: `token.json` not found or invalid
 
 **Solution**:
-1. Delete the existing `token.json` file (if it exists)
+1. Delete the existing `token.json` file (in `~/.drive-synapsis/`)
 2. Run the authentication flow again: `uv run src/drive_synapsis/main_server.py`
 3. Complete the browser authorization
 
@@ -227,7 +195,7 @@ If this works, your installation is complete! 🎉
 **Solutions**:
 - Verify `uv` or `python` is in your system PATH
 - Use absolute paths in configuration
-- Check that `client_secret.json` and `token.json` exist in the project directory
+- Check that `client_secret.json` and `token.json` exist in `~/.drive-synapsis/`
 - Ensure the virtual environment has all dependencies installed
 
 ### Permission Errors
@@ -254,7 +222,7 @@ If this works, your installation is complete! 🎉
 
 **Solution**:
 - Verify the file is named exactly `client_secret.json`
-- Ensure it's in the root project directory (same level as `pyproject.toml`)
+- Ensure it's in `~/.drive-synapsis/`
 - Check file permissions (must be readable)
 
 ## Enterprise Deployment (Google Workspace)
