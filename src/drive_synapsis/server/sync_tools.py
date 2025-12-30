@@ -21,6 +21,60 @@ except ImportError:
     HttpError = Exception
 
 
+def _download_doc_tabs_impl(local_dir: str, real_id: str) -> str:
+    """Internal implementation for downloading multi-tab docs.
+
+    Extracted to allow reuse from both download_doc_tabs tool and
+    auto-detect logic in download_google_doc.
+    """
+    os.makedirs(local_dir, exist_ok=True)
+
+    full_content = get_client().download_doc(real_id, "markdown")
+    full_export_path = os.path.join(local_dir, "_Full_Export.md")
+    with open(full_export_path, "w") as f:
+        f.write(full_content)
+
+    doc_structure = get_client().get_doc_structure(real_id)
+    tabs = doc_structure.get("tabs", [])
+
+    extracted_count = 0
+
+    if not tabs:
+        body = doc_structure.get("body", {}).get("content", [])
+        text = get_client().extract_text_from_element(body)
+        main_path = os.path.join(local_dir, "Main.txt")
+        with open(main_path, "w") as f:
+            f.write(text)
+        extracted_count = 1
+    else:
+        for tab in tabs:
+            tab_props = tab.get("tabProperties", {})
+            title = tab_props.get("title", "Untitled Tab")
+            safe_title = "".join(
+                [c for c in title if c.isalpha() or c.isdigit() or c in " ._-"]
+            ).strip()
+
+            doc_tab = tab.get("documentTab", {})
+            body = doc_tab.get("body", {}).get("content", [])
+
+            text = get_client().extract_text_from_element(body)
+
+            tab_path = os.path.join(local_dir, f"{safe_title}.txt")
+            with open(tab_path, "w") as f:
+                f.write(text)
+
+            tab_id = tab_props.get("tabId")
+            if tab_id:
+                sync_manager.link_file(tab_path, f"{real_id}:{tab_id}")
+
+            extracted_count += 1
+
+    sync_manager.link_file(local_dir, real_id)
+    sync_manager.link_file(full_export_path, real_id)
+
+    return f"Hybrid Sync Complete in '{local_dir}'. Saved _Full_Export.md and {extracted_count} tab files."
+
+
 @mcp.tool()
 def link_local_file(local_path: str, file_id: str) -> str:
     """
@@ -176,6 +230,27 @@ def download_google_doc(
             raise LinkNotFoundError(local_path)
 
         file_id = link["id"]
+
+        # Auto-Detect Multi-Tab Documents (Hybrid Sync Enforcer)
+        # If the user asks for a simple markdown download, but the doc has tabs,
+        # we explicitly switch to 'download_doc_tabs' to preserve structure.
+        if format == "markdown":
+            try:
+                struct = get_client().get_doc_structure(file_id)
+                tabs = struct.get("tabs", [])
+                if len(tabs) > 1:
+                    # Switch to Hybrid Sync
+                    # Logic: local_path "Doc.md" -> Directory "Doc"
+                    target_dir = os.path.splitext(local_path)[0]
+                    # Call the download_doc_tabs logic directly
+                    result = _download_doc_tabs_impl(target_dir, file_id)
+                    return (
+                        f"NOTE: Multi-tab document detected ({len(tabs)} tabs). "
+                        f"Automatically switched to Hybrid Sync.\n\n{result}"
+                    )
+            except Exception:
+                # If structure fetch fails, fall back to standard download
+                pass
 
         content = get_client().download_doc(file_id, format)
 
@@ -470,53 +545,7 @@ def download_doc_tabs(local_dir: str, file_id: str) -> str:
     """
     try:
         real_id = search_manager.resolve_alias(file_id)
-        os.makedirs(local_dir, exist_ok=True)
-
-        full_content = get_client().download_doc(real_id, "markdown")
-        full_export_path = os.path.join(local_dir, "_Full_Export.md")
-        with open(full_export_path, "w") as f:
-            f.write(full_content)
-
-        doc_structure = get_client().get_doc_structure(real_id)
-        tabs = doc_structure.get("tabs", [])
-
-        extracted_count = 0
-
-        if not tabs:
-            body = doc_structure.get("body", {}).get("content", [])
-            text = get_client().extract_text_from_element(body)
-            main_path = os.path.join(local_dir, "Main.txt")
-            with open(main_path, "w") as f:
-                f.write(text)
-            extracted_count = 1
-        else:
-            for tab in tabs:
-                tab_props = tab.get("tabProperties", {})
-                title = tab_props.get("title", "Untitled Tab")
-                safe_title = "".join(
-                    [c for c in title if c.isalpha() or c.isdigit() or c in " ._-"]
-                ).strip()
-
-                doc_tab = tab.get("documentTab", {})
-                body = doc_tab.get("body", {}).get("content", [])
-
-                text = get_client().extract_text_from_element(body)
-
-                tab_path = os.path.join(local_dir, f"{safe_title}.txt")
-                with open(tab_path, "w") as f:
-                    f.write(text)
-
-                tab_id = tab_props.get("tabId")
-                if tab_id:
-                    sync_manager.link_file(tab_path, f"{real_id}:{tab_id}")
-
-                extracted_count += 1
-
-        sync_manager.link_file(local_dir, real_id)
-        sync_manager.link_file(full_export_path, real_id)
-
-        return f"Hybrid Sync Complete in '{local_dir}'. Saved _Full_Export.md and {extracted_count} tab files."
-
+        return _download_doc_tabs_impl(local_dir, real_id)
     except HttpError as e:
         return format_error("Download tabs", handle_http_error(e, file_id))
     except GDriveError as e:
