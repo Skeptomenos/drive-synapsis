@@ -1,13 +1,43 @@
 """Document-related MCP tools."""
+
 from .main import mcp, get_client
 from .managers import search_manager
 from ..utils.errors import handle_http_error, format_error, GDriveError
 import json
+from typing import Optional
 
 try:
     from googleapiclient.errors import HttpError
 except ImportError:
     HttpError = Exception
+
+
+@mcp.tool()
+def read_google_drive_file(
+    file_id: Optional[str] = None, name: Optional[str] = None, id: Optional[str] = None
+) -> str:
+    """
+    Read the content of a file from Google Drive to SHOW it to the user.
+    Use this ONLY when the user asks to "show", "read", or "display" the file content.
+    Do NOT use this if the user asks to "download", "save", or "create" a local file.
+    Args:
+        file_id: The ID of the file or its search alias (e.g. "A").
+        name: Name of the file to search for (if file_id not provided).
+        id: Alias for file_id (deprecated, use file_id instead).
+    """
+    target_id = file_id or id or name
+    if not target_id:
+        return "Error: Please provide file_id, name, or id parameter."
+
+    try:
+        real_id = search_manager.resolve_alias(target_id)
+        return get_client().read_file(real_id)
+    except HttpError as e:
+        return format_error("Read file", handle_http_error(e, target_id))
+    except GDriveError as e:
+        return format_error("Read file", e)
+    except Exception as e:
+        return f"Read file failed: Unexpected error ({type(e).__name__}: {e})"
 
 
 @mcp.tool()
@@ -26,31 +56,6 @@ def create_google_doc(title: str, content: str) -> str:
         return format_error("Create doc", e)
     except Exception as e:
         return f"Create doc failed: Unexpected error ({type(e).__name__}: {e})"
-
-
-@mcp.tool()
-def read_google_drive_file(name: str, id: str = None) -> str:
-    """
-    Read the content of a file from Google Drive to SHOW it to the user.
-    Use this ONLY when the user asks to "show", "read", or "display" the file content.
-    Do NOT use this if the user asks to "download", "save", or "create" a local file.
-    Args:
-        name: Name of the file to read.
-        id: Optional ID. If not provided, searches by name.
-    """
-    try:
-        if id:
-            real_id = search_manager.resolve_alias(id)
-            return get_client().read_file(real_id)
-        else:
-            real_id = search_manager.resolve_alias(name)
-            return get_client().read_file(real_id)
-    except HttpError as e:
-        return format_error("Read file", handle_http_error(e, id or name))
-    except GDriveError as e:
-        return format_error("Read file", e)
-    except Exception as e:
-        return f"Read file failed: Unexpected error ({type(e).__name__}: {e})"
 
 
 @mcp.tool()
@@ -74,7 +79,9 @@ def append_to_google_doc(file_id: str, content: str) -> str:
 
 
 @mcp.tool()
-def replace_doc_text(file_id: str, find: str, replace: str, match_case: bool = False) -> str:
+def replace_doc_text(
+    file_id: str, find: str, replace: str, match_case: bool = False
+) -> str:
     """
     Find and replace text in a Google Doc.
     Useful for bulk updates like changing "TODO" to "DONE".
@@ -128,15 +135,15 @@ def get_document_outline(file_id: str) -> str:
     try:
         real_id = search_manager.resolve_alias(file_id)
         outline = get_client().get_document_outline(real_id)
-        
+
         if not outline:
             return "No headings found in document."
-        
+
         output = ["Document Outline:"]
         for i, item in enumerate(outline):
-            indent = "  " * (item['level'] - 1)
-            output.append(f"{i+1}. {indent}[H{item['level']}] {item['text']}")
-        
+            indent = "  " * (item["level"] - 1)
+            output.append(f"{i + 1}. {indent}[H{item['level']}] {item['text']}")
+
         return "\n".join(output)
     except HttpError as e:
         return format_error("Get outline", handle_http_error(e, file_id))
@@ -158,20 +165,22 @@ def read_document_section(file_id: str, section_number: int) -> str:
     try:
         real_id = search_manager.resolve_alias(file_id)
         outline = get_client().get_document_outline(real_id)
-        
+
         if not outline:
             return "No sections found in document."
-        
+
         if section_number < 1 or section_number > len(outline):
             return f"Invalid section number. Valid range: 1-{len(outline)}"
-        
+
         section = outline[section_number - 1]
-        start = section['startIndex']
-        end = section['endIndex']
-        
+        start = section["startIndex"]
+        end = section["endIndex"]
+
         if section_number < len(outline):
-            end = outline[section_number]['startIndex']
-        
+            end = outline[section_number]["startIndex"]
+        else:
+            end = 9999999
+
         content = get_client().read_document_section(real_id, start, end)
         return f"## {section['text']}\n\n{content}"
     except HttpError as e:
@@ -183,7 +192,9 @@ def read_document_section(file_id: str, section_number: int) -> str:
 
 
 @mcp.tool()
-def post_comment(file_id: str, comment_text: str, quoted_text: str = None) -> str:
+def post_comment(
+    file_id: str, comment_text: str, quoted_text: str | None = None
+) -> str:
     """
     Post a comment on a Google Drive file (Doc, Sheet, etc.).
     Useful for collaboration workflows where AI needs to flag issues or ask questions.
@@ -225,7 +236,9 @@ def reply_to_comment(file_id: str, comment_id: str, reply_text: str) -> str:
 
 
 @mcp.tool()
-def create_doc_from_template(template_id: str, new_title: str, replacements: str) -> str:
+def create_doc_from_template(
+    template_id: str, new_title: str, replacements: str
+) -> str:
     """
     Create a new Google Doc by copying a template and replacing placeholders.
     Args:
@@ -244,4 +257,6 @@ def create_doc_from_template(template_id: str, new_title: str, replacements: str
     except GDriveError as e:
         return format_error("Create from template", e)
     except Exception as e:
-        return f"Create from template failed: Unexpected error ({type(e).__name__}: {e})"
+        return (
+            f"Create from template failed: Unexpected error ({type(e).__name__}: {e})"
+        )

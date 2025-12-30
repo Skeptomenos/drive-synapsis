@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-drive-synapsis = "drive_synapsis.main_server:main"
+drive-synapsis = "drive_synapsis.server:main"
 drive-synapsis-config = "drive_synapsis.config_gen:main"
 
 [tool.uv]
