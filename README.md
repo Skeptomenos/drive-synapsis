@@ -18,6 +18,7 @@ Unlike basic Drive integrations, this server provides:
 4. **📝 Rich Format Conversion**: Seamless Markdown ↔ Google Docs conversion preserving formatting, links, tables, and comments
 5. **🔐 Safe by Default**: Dry-run mode for all destructive operations, conflict detection, and rollback support
 6. **🏗️ Enterprise Features**: Bulk operations, folder mirroring, template management, and advanced permissions
+7. **🔑 OAuth 2.1 with PKCE**: Modern authentication with session persistence that survives server restarts
 
 ### What Sets It Apart
 
@@ -30,6 +31,7 @@ Unlike basic Drive integrations, this server provides:
 | Search Ranking | ✅ AI-optimized scoring | ⚠️ Simple matching |
 | Safety Features | ✅ Dry-run, diffs, conflicts | ❌ Direct operations |
 | Alias System | ✅ User-friendly references | ❌ Long IDs only |
+| OAuth 2.1 + PKCE | ✅ Session persistence | ❌ Token management |
 
 ---
 
@@ -279,6 +281,19 @@ MCP tools organized by domain:
 - Detects sync conflicts
 - Persists to `.sync_map.json`
 
+### Authentication Layer (`src/auth/`)
+
+OAuth 2.1 implementation with PKCE:
+
+| Module | Purpose |
+|--------|---------|
+| `google_auth.py` | Core OAuth flow with PKCE |
+| `credential_store.py` | Per-user credential persistence |
+| `oauth21_session_store.py` | Session management with disk persistence |
+| `oauth_callback_server.py` | Non-blocking OAuth callback handler |
+| `oauth_config.py` | Centralized configuration |
+| `scopes.py` | Drive/Docs/Sheets scope definitions |
+
 ### Utilities (`src/utils/`)
 
 - **`conversion.py`**: Markdown ↔ Google Docs rich text conversion
@@ -475,13 +490,26 @@ MIT License - see LICENSE file for details
 
 ---
 
+## 🔑 Authentication
+
+Drive Synapsis uses **OAuth 2.1 with PKCE** for secure authentication:
+
+- **Session Persistence**: OAuth states persist to disk, surviving server restarts during auth flows
+- **Multi-User Support**: Credentials stored per-user in `~/.drive-synapsis/credentials/`
+- **Automatic Token Refresh**: Tokens refresh automatically when expired
+- **PKCE Security**: Proof Key for Code Exchange prevents authorization code interception
+
+For headless environments (VPS, remote servers), generate `token.json` locally first, then copy to the server.
+
+---
+
 ## ⚠️ Known Limitations
 
 To ensure the best experience, please be aware of the current limitations:
 
 1.  **Authentication**:
     - Requires a browser-based OAuth flow for the initial setup.
-    - For headless environments (VPS, remote servers), you must generate `token.json` locally and copy it to the server.
+    - For headless environments, you must generate credentials locally and copy them to the server.
 
 2.  **Conversion Fidelity**:
     - **Google Docs**: Complex elements like drawings, equations, heavily nested tables, and proprietary add-ons may not convert perfectly to Markdown. Images are currently not extracted.
