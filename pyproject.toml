@@ -1,6 +1,6 @@
 [project]
 name = "drive-synapsis"
-version = "0.2.0"
+version = "0.3.0"
 description = "Drive Synapsis - Google Drive MCP Server for AI Assistants"
 requires-python = ">=3.10"
 dependencies = [
@@ -9,11 +9,24 @@ dependencies = [
     "google-auth-oauthlib",
     "python-dotenv",
     "uvicorn",
+    "fastapi>=0.100.0",
 ]
 
 [project.scripts]
 drive-synapsis = "drive_synapsis.server:main"
 drive-synapsis-config = "drive_synapsis.config_gen:main"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/drive_synapsis"]
+
 [tool.uv]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
 # Optimization for uv

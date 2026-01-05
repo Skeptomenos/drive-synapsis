@@ -98,6 +98,10 @@ anamnesis/         # AI framework
 
 ---
 
+## OpenCode Environment
+For detailed instructions on using specific tools (PTY, Workspace MCP, Drive Synapsis, Auth Plugins, etc.), ALWAYS refer to the central guide:
+- `/Users/davidhelmus/Repos/personal-os/Knowledge/OpenCode-Guide.md`
+
 ## Commands
 
 ```bash
