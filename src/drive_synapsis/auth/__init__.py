@@ -16,6 +16,7 @@ from .google_auth import (
     get_creds,
     start_auth_flow,
     handle_auth_callback,
+    check_client_secrets,
     GoogleAuthenticationError,
 )
 
@@ -36,5 +37,6 @@ __all__ = [
     "get_creds",
     "start_auth_flow",
     "handle_auth_callback",
+    "check_client_secrets",
     "GoogleAuthenticationError",
 ]

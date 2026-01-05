@@ -8,6 +8,7 @@ from . import sheet_tools
 from . import file_tools
 from . import sync_tools
 from . import sharing_tools
+from . import auth_tools
 
 __all__ = ["mcp", "get_client", "main"]
 
