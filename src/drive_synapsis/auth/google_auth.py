@@ -10,7 +10,6 @@ import os
 from typing import Dict, Any, List, Optional, Tuple, Union
 
 from google.oauth2.credentials import Credentials
-from google.auth.credentials import Credentials as BaseCredentials
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
@@ -553,7 +552,6 @@ def get_creds() -> Any:
 
     config = get_oauth_config()
 
-    # For backward compatibility, try blocking flow first
     if os.path.exists(config.client_secrets_path):
         try:
             flow = InstalledAppFlow.from_client_secrets_file(
@@ -561,14 +559,19 @@ def get_creds() -> Any:
             )
             credentials = flow.run_local_server(port=0)
 
-            # Save credentials
             with open(legacy_token_path, "w") as token:
                 token.write(credentials.to_json())
 
             return credentials
+        except (OSError, IOError, ConnectionError) as e:
+            logger.error(f"Network/IO error during auth flow: {e}")
+            raise GoogleAuthenticationError(
+                f"Authentication failed due to network error: {e}"
+            )
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
             logger.error(f"Blocking auth flow failed: {e}")
 
-    # Fall back to non-blocking flow
     auth_message = start_auth_flow(service_name="Drive Synapsis")
     raise GoogleAuthenticationError(auth_message)

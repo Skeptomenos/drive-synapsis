@@ -1,3 +1,4 @@
 #!/bin/bash
-export PYTHONPATH="/Users/davidhelmus/Repos/drive-synapsis/src"
-exec /Users/davidhelmus/Repos/drive-synapsis/.venv/bin/python -m drive_synapsis.main_server "$@" 2>/tmp/drive-synapsis-error.log
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PYTHONPATH="${SCRIPT_DIR}/src"
+exec "${SCRIPT_DIR}/.venv/bin/python" -m drive_synapsis.server "$@"

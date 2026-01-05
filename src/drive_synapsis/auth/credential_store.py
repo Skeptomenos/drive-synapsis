@@ -8,6 +8,7 @@ using local JSON files for persistence.
 import os
 import json
 import logging
+import base64
 from abc import ABC, abstractmethod
 from typing import Optional, List
 from datetime import datetime
@@ -69,11 +70,33 @@ class LocalDirectoryCredentialStore(CredentialStore):
             os.makedirs(self.base_dir, exist_ok=True)
             logger.info(f"Created credentials directory: {self.base_dir}")
 
+    def _email_to_filename(self, user_email: str) -> str:
+        """
+        Convert email to a safe filename using URL-safe base64 encoding.
+
+        This ensures the transformation is reversible for any email address,
+        including those with underscores (e.g., john_doe@example.com).
+        """
+        encoded = base64.urlsafe_b64encode(user_email.encode("utf-8")).decode("ascii")
+        # Remove padding for cleaner filenames
+        return encoded.rstrip("=")
+
+    def _filename_to_email(self, filename: str) -> str:
+        """
+        Convert a filename back to the original email address.
+
+        Reverses the URL-safe base64 encoding from _email_to_filename.
+        """
+        # Add back padding if needed
+        padding = 4 - (len(filename) % 4)
+        if padding != 4:
+            filename += "=" * padding
+        return base64.urlsafe_b64decode(filename.encode("ascii")).decode("utf-8")
+
     def _get_credential_path(self, user_email: str) -> str:
         """Get the file path for a user's credentials."""
         self._ensure_dir_exists()
-        # Sanitize email for filename
-        safe_email = user_email.replace("@", "_at_").replace(".", "_")
+        safe_email = self._email_to_filename(user_email)
         return os.path.join(self.base_dir, f"{safe_email}.json")
 
     def get_credential(self, user_email: str) -> Optional[Credentials]:
@@ -161,10 +184,14 @@ class LocalDirectoryCredentialStore(CredentialStore):
         try:
             for filename in os.listdir(self.base_dir):
                 if filename.endswith(".json"):
-                    # Convert filename back to email
-                    user_part = filename[:-5]  # Remove .json
-                    user_email = user_part.replace("_at_", "@").replace("_", ".")
-                    users.append(user_email)
+                    encoded_part = filename[:-5]
+                    try:
+                        user_email = self._filename_to_email(encoded_part)
+                        users.append(user_email)
+                    except (ValueError, UnicodeDecodeError) as e:
+                        logger.warning(
+                            f"Could not decode credential file {filename}: {e}"
+                        )
             logger.debug(f"Found {len(users)} users with credentials")
         except OSError as e:
             logger.error(f"Error listing credential files: {e}")

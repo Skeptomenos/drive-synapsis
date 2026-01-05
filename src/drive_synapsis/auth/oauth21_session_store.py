@@ -8,6 +8,7 @@ to survive server restarts during OAuth flows.
 import json
 import logging
 import os
+import tempfile
 from typing import Dict, Optional, Any
 from threading import RLock
 from datetime import datetime, timedelta, timezone
@@ -142,7 +143,7 @@ class OAuth21SessionStore:
             logger.error("Unexpected error loading OAuth states: %s", e)
 
     def _save_oauth_states_to_disk(self) -> None:
-        """Persist OAuth states to disk. Caller must hold lock."""
+        """Persist OAuth states to disk atomically. Caller must hold lock."""
         try:
             serializable_data = {}
             for state, data in self._oauth_states.items():
@@ -156,8 +157,16 @@ class OAuth21SessionStore:
                     else None,
                 }
 
-            with open(self._states_file_path, "w") as f:
-                json.dump(serializable_data, f, indent=2)
+            target_dir = os.path.dirname(self._states_file_path)
+            fd, temp_path = tempfile.mkstemp(dir=target_dir, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w") as f:
+                    json.dump(serializable_data, f, indent=2)
+                os.replace(temp_path, self._states_file_path)
+            except Exception:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                raise
 
             logger.debug("Persisted %d OAuth states to disk", len(serializable_data))
 
