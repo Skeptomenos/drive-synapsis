@@ -19,7 +19,7 @@ class OAuthConfig:
     def __init__(self) -> None:
         # Base server configuration
         self.base_uri = os.getenv("DRIVE_SYNAPSIS_BASE_URI", "http://localhost")
-        self.port = int(os.getenv("DRIVE_SYNAPSIS_PORT", "8000"))
+        self.port = int(os.getenv("DRIVE_SYNAPSIS_PORT", "9877"))
         self.base_url = f"{self.base_uri}:{self.port}"
 
         # External URL for reverse proxy scenarios

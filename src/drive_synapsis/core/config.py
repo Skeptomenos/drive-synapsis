@@ -9,7 +9,7 @@ import os
 from typing import Optional
 
 # Server configuration
-DRIVE_SYNAPSIS_PORT = int(os.getenv("DRIVE_SYNAPSIS_PORT", "8000"))
+DRIVE_SYNAPSIS_PORT = int(os.getenv("DRIVE_SYNAPSIS_PORT", "9877"))
 DRIVE_SYNAPSIS_BASE_URI = os.getenv("DRIVE_SYNAPSIS_BASE_URI", "http://localhost")
 
 # Credentials directory
@@ -37,7 +37,7 @@ def get_oauth_base_url() -> str:
     Get the OAuth base URL for constructing OAuth endpoints.
 
     Returns:
-        Base URL for OAuth endpoints (e.g., "http://localhost:8000")
+        Base URL for OAuth endpoints (e.g., "http://localhost:9877")
     """
     external_url = os.getenv("DRIVE_SYNAPSIS_EXTERNAL_URL")
     if external_url:

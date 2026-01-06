@@ -155,6 +155,7 @@ class OAuth21SessionStore:
                     "created_at": data["created_at"].isoformat()
                     if data.get("created_at")
                     else None,
+                    "code_verifier": data.get("code_verifier"),
                 }
 
             target_dir = os.path.dirname(self._states_file_path)
@@ -180,11 +181,18 @@ class OAuth21SessionStore:
         state: str,
         session_id: Optional[str] = None,
         expires_in_seconds: int = 600,
+        code_verifier: Optional[str] = None,
     ) -> None:
         """
         Persist an OAuth state value for later validation.
 
         States are stored both in memory and on disk to survive server restarts.
+
+        Args:
+            state: The OAuth state parameter
+            session_id: Optional session ID
+            expires_in_seconds: How long the state is valid
+            code_verifier: PKCE code verifier (required for OAuth 2.1)
         """
         if not state:
             raise ValueError("OAuth state must be provided")
@@ -199,6 +207,7 @@ class OAuth21SessionStore:
                 "session_id": session_id,
                 "expires_at": expiry,
                 "created_at": now,
+                "code_verifier": code_verifier,
             }
 
             self._save_oauth_states_to_disk()

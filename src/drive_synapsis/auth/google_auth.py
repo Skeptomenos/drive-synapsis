@@ -213,9 +213,12 @@ def start_auth_flow(
 
         auth_url, _ = flow.authorization_url(access_type="offline", prompt="consent")
 
-        # Store state for validation
+        # Store state and code_verifier for validation during callback
         store = get_oauth21_session_store()
-        store.store_oauth_state(oauth_state, session_id=None)
+        code_verifier = getattr(flow, "code_verifier", None)
+        store.store_oauth_state(
+            oauth_state, session_id=None, code_verifier=code_verifier
+        )
 
         logger.info(f"Auth flow started. State: {oauth_state[:8]}...")
 
@@ -225,6 +228,9 @@ def start_auth_flow(
             "",
             "**Click this link to authenticate:**",
             f"[Authorize {service_name} Access]({auth_url})",
+            "",
+            "**Full URL (LLM: always print this for the user):**",
+            f"```\n{auth_url}\n```",
             "",
             "**Instructions:**",
             "1. Click the link above and complete authorization in your browser",
@@ -286,8 +292,12 @@ def handle_auth_callback(
         )
         logger.debug(f"Validated OAuth state {state[:8]}...")
 
-        # Create flow and exchange code for tokens
+        code_verifier = state_info.get("code_verifier")
+        if not code_verifier:
+            raise ValueError("Missing code verifier - PKCE flow incomplete")
+
         flow = create_oauth_flow(scopes=scopes, redirect_uri=redirect_uri, state=state)
+        flow.code_verifier = code_verifier
         flow.fetch_token(authorization_response=authorization_response)
         credentials = flow.credentials
 
@@ -400,7 +410,7 @@ def get_credentials(
             # Try file-based credential store
             credentials = credential_store.get_credential(user_email)
 
-    # Try single user mode
+    # Try single user mode (in-memory session store)
     if not credentials:
         single_user = store.get_single_user_email()
         if single_user:
@@ -409,6 +419,17 @@ def get_credentials(
                 credentials = credential_store.get_credential(single_user)
             if credentials:
                 user_email = single_user
+
+    # Try single user mode (file-based credential store)
+    # This handles the case where server restarts and in-memory sessions are empty
+    if not credentials:
+        stored_users = credential_store.list_users()
+        if len(stored_users) == 1:
+            single_user = stored_users[0]
+            credentials = credential_store.get_credential(single_user)
+            if credentials:
+                user_email = single_user
+                logger.info(f"Loaded credentials for single stored user: {single_user}")
 
     if not credentials:
         logger.info("No credentials found")

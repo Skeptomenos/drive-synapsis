@@ -139,7 +139,7 @@ class MinimalOAuthServer:
     Only starts when needed and runs in a background thread.
     """
 
-    def __init__(self, port: int = 8000, base_uri: str = "http://localhost") -> None:
+    def __init__(self, port: int = 9877, base_uri: str = "http://localhost") -> None:
         self.port = port
         self.base_uri = base_uri
         self.app = FastAPI()
@@ -290,7 +290,7 @@ _minimal_oauth_server: Optional[MinimalOAuthServer] = None
 
 
 def ensure_oauth_callback_available(
-    transport_mode: str = "stdio", port: int = 8000, base_uri: str = "http://localhost"
+    transport_mode: str = "stdio", port: int = 9877, base_uri: str = "http://localhost"
 ) -> Tuple[bool, str]:
     """
     Ensure OAuth callback endpoint is available.
@@ -299,7 +299,7 @@ def ensure_oauth_callback_available(
 
     Args:
         transport_mode: "stdio" or "streamable-http"
-        port: Port number (default 8000)
+        port: Port number (default 9877)
         base_uri: Base URI (default "http://localhost")
 
     Returns:
