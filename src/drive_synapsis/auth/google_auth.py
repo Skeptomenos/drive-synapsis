@@ -505,15 +505,9 @@ def get_credentials_or_auth_url(
     if credentials and credentials.valid:
         return credentials, None
 
-    # Need authentication
-    from .oauth_callback_server import ensure_oauth_callback_available
+    from .oauth_callback_server import start_oauth_callback_server
 
-    config = get_oauth_config()
-    success, error_msg = ensure_oauth_callback_available(
-        transport_mode=config.get_transport_mode(),
-        port=config.port,
-        base_uri=config.base_uri,
-    )
+    success, error_msg, redirect_uri = start_oauth_callback_server()
 
     if not success:
         raise GoogleAuthenticationError(
@@ -523,6 +517,7 @@ def get_credentials_or_auth_url(
     auth_message = start_auth_flow(
         user_google_email=user_email,
         service_name="Drive Synapsis",
+        redirect_uri=redirect_uri,
     )
 
     return None, auth_message
@@ -567,8 +562,6 @@ def get_creds() -> Any:
         except Exception as e:
             logger.warning(f"Failed to load legacy token: {e}")
 
-    # Need to authenticate
-    from .oauth_callback_server import ensure_oauth_callback_available
     from google_auth_oauthlib.flow import InstalledAppFlow
 
     config = get_oauth_config()

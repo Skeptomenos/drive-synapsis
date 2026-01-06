@@ -3,10 +3,14 @@ OAuth Callback Server for Drive Synapsis.
 
 In stdio mode, starts a minimal HTTP server for OAuth callbacks.
 This allows non-blocking OAuth flows where the user authenticates in browser.
+
+The server uses dynamic port allocation to avoid conflicts when multiple
+MCP server instances run simultaneously.
 """
 
 import asyncio
 import logging
+import random
 import threading
 import time
 import socket
@@ -18,9 +22,35 @@ from fastapi.responses import HTMLResponse
 
 from .scopes import get_scopes
 from .oauth21_session_store import get_oauth21_session_store
-from .oauth_config import get_oauth_redirect_uri, get_oauth_config
 
 logger = logging.getLogger(__name__)
+
+PORT_RANGE_START = 9877
+PORT_RANGE_END = 9899
+
+
+def find_available_port(
+    start: int = PORT_RANGE_START, end: int = PORT_RANGE_END
+) -> Optional[int]:
+    """
+    Find an available port in the given range.
+
+    Tries ports in random order to minimize collision probability
+    when multiple processes start simultaneously.
+    """
+    ports = list(range(start, end + 1))
+    random.shuffle(ports)
+
+    for port in ports:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(("localhost", port))
+                return port
+        except OSError:
+            continue
+
+    return None
 
 
 def _create_success_html(user_email: str) -> str:
@@ -139,22 +169,23 @@ class MinimalOAuthServer:
     Only starts when needed and runs in a background thread.
     """
 
-    def __init__(self, port: int = 9877, base_uri: str = "http://localhost") -> None:
+    def __init__(self, port: int, base_uri: str = "http://localhost") -> None:
         self.port = port
         self.base_uri = base_uri
+        self.redirect_uri = f"{base_uri}:{port}/oauth2callback"
         self.app = FastAPI()
         self.server: Optional[uvicorn.Server] = None
         self.server_thread: Optional[threading.Thread] = None
         self.is_running = False
+        self._auth_completed = False
 
         self._setup_callback_route()
 
     def _setup_callback_route(self) -> None:
-        """Setup the OAuth callback route."""
+        server_instance = self
 
         @self.app.get("/oauth2callback")
         async def oauth_callback(request: Request) -> HTMLResponse:
-            """Handle OAuth callback from Google."""
             from .google_auth import handle_auth_callback
 
             state = request.query_params.get("state")
@@ -178,15 +209,18 @@ class MinimalOAuthServer:
             try:
                 logger.info(f"OAuth callback: Received code (state: {state})")
 
-                redirect_uri = get_oauth_redirect_uri()
                 user_email, credentials = handle_auth_callback(
                     scopes=get_scopes(),
                     authorization_response=str(request.url),
-                    redirect_uri=redirect_uri,
+                    redirect_uri=server_instance.redirect_uri,
                     session_id=None,
                 )
 
                 logger.info(f"OAuth callback: Successfully authenticated {user_email}")
+                server_instance._auth_completed = True
+
+                asyncio.get_event_loop().call_later(2.0, server_instance.stop)
+
                 return HTMLResponse(content=_create_success_html(user_email))
 
             except Exception as e:
@@ -285,8 +319,45 @@ class MinimalOAuthServer:
             logger.error(f"Error stopping OAuth server: {e}", exc_info=True)
 
 
-# Global instance for stdio mode
 _minimal_oauth_server: Optional[MinimalOAuthServer] = None
+
+
+def start_oauth_callback_server(
+    base_uri: str = "http://localhost",
+) -> Tuple[bool, str, Optional[str]]:
+    """
+    Start OAuth callback server on a dynamically allocated port.
+
+    Returns:
+        Tuple of (success, error_message, redirect_uri)
+    """
+    global _minimal_oauth_server
+
+    if _minimal_oauth_server is not None and _minimal_oauth_server.is_running:
+        return True, "", _minimal_oauth_server.redirect_uri
+
+    port = find_available_port()
+    if port is None:
+        return (
+            False,
+            f"No available port in range {PORT_RANGE_START}-{PORT_RANGE_END}",
+            None,
+        )
+
+    logger.info(f"Starting OAuth callback server on {base_uri}:{port}")
+    _minimal_oauth_server = MinimalOAuthServer(port, base_uri)
+
+    success, error_msg = _minimal_oauth_server.start()
+    if success:
+        return True, "", _minimal_oauth_server.redirect_uri
+    return False, error_msg, None
+
+
+def get_active_oauth_redirect_uri() -> Optional[str]:
+    """Get the redirect URI of the currently running OAuth server."""
+    if _minimal_oauth_server is not None and _minimal_oauth_server.is_running:
+        return _minimal_oauth_server.redirect_uri
+    return None
 
 
 def ensure_oauth_callback_available(
@@ -295,34 +366,22 @@ def ensure_oauth_callback_available(
     """
     Ensure OAuth callback endpoint is available.
 
-    For stdio mode: Starts a minimal server if needed.
-
-    Args:
-        transport_mode: "stdio" or "streamable-http"
-        port: Port number (default 9877)
-        base_uri: Base URI (default "http://localhost")
-
-    Returns:
-        Tuple of (success: bool, error_message: str)
+    DEPRECATED: Use start_oauth_callback_server() for dynamic port allocation.
+    This function is kept for backward compatibility.
     """
     global _minimal_oauth_server
 
     if transport_mode == "streamable-http":
-        # In streamable-http mode, assume main server handles callbacks
         logger.debug("Using existing server for OAuth callbacks")
         return True, ""
 
     elif transport_mode == "stdio":
-        if _minimal_oauth_server is None:
-            logger.info(f"Creating minimal OAuth server on {base_uri}:{port}")
-            _minimal_oauth_server = MinimalOAuthServer(port, base_uri)
-
-        if not _minimal_oauth_server.is_running:
-            logger.info("Starting minimal OAuth server for stdio mode")
-            return _minimal_oauth_server.start()
-        else:
+        if _minimal_oauth_server is not None and _minimal_oauth_server.is_running:
             logger.info("Minimal OAuth server is already running")
             return True, ""
+
+        success, error_msg, _ = start_oauth_callback_server(base_uri)
+        return success, error_msg
 
     else:
         error_msg = f"Unknown transport mode: {transport_mode}"

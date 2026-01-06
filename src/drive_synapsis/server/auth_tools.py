@@ -1,12 +1,10 @@
 """Authentication MCP tools for Drive Synapsis."""
 
 import logging
-from typing import Optional
 
 from .main import mcp
 from ..auth import start_auth_flow, check_client_secrets
-from ..auth.oauth_callback_server import ensure_oauth_callback_available
-from ..auth.oauth_config import get_oauth_config, get_oauth_redirect_uri
+from ..auth.oauth_callback_server import start_oauth_callback_server
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +35,7 @@ def start_google_auth(service_name: str = "Google Drive") -> str:
         return f"**Authentication Error:** {error_message}"
 
     try:
-        config = get_oauth_config()
-        success, error_msg = ensure_oauth_callback_available(
-            transport_mode=config.get_transport_mode(),
-            port=config.port,
-            base_uri=config.base_uri,
-        )
+        success, error_msg, redirect_uri = start_oauth_callback_server()
 
         if not success:
             return f"**Error:** OAuth callback server unavailable: {error_msg}"
@@ -50,7 +43,7 @@ def start_google_auth(service_name: str = "Google Drive") -> str:
         auth_message = start_auth_flow(
             user_google_email=None,
             service_name=service_name,
-            redirect_uri=get_oauth_redirect_uri(),
+            redirect_uri=redirect_uri,
         )
         return auth_message
 
