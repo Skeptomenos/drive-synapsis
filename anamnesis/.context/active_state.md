@@ -13,8 +13,8 @@ We have just completed a major refactor of the installation process. The "Intera
 - [ ] Continue enriching `anamnesis/specs/` (Product, Tech Stack) if needed.
 
 ## Recent Accomplishments
-- **Interactive Wizard:** Replaced manual JSON copying with a CLI wizard that moves secrets to `~/.drive-synapsis` and auto-configures Claude/Gemini/OpenCode.
-- **Safety Upgrade:** Moved credentials out of the project root to `~/.drive-synapsis` for better security.
+- **Interactive Wizard:** Replaced manual JSON copying with a CLI wizard that moves secrets to `~/.config/drive-synapsis` and auto-configures Claude/Gemini/OpenCode.
+- **Safety Upgrade:** Moved credentials out of the project root to `~/.config/drive-synapsis` for better security.
 - **Framework Initialization:** Populated `AGENTS.md` and `mission.md` with real project data.
 
 ## Open Questions / Blockers

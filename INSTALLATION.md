@@ -88,10 +88,10 @@ Since your app is likely just for you or your team, you will keep it in **"Testi
 5. Click **"Create"**
 6. Click **"Download JSON"** to download the credentials file
 7. **Rename** the downloaded file to `client_secret.json`
-8. **Create** the directory `~/.drive-synapsis/` and **move** `client_secret.json` there.
+8. **Create** the directory `~/.config/drive-synapsis/` and **move** `client_secret.json` there.
    ```bash
-   mkdir -p ~/.drive-synapsis
-   mv ~/Downloads/client_secret.json ~/.drive-synapsis/
+   mkdir -p ~/.config/drive-synapsis
+   mv ~/Downloads/client_secret.json ~/.config/drive-synapsis/
    ```
 
 Your Google Cloud setup is now complete! ✅
@@ -141,7 +141,7 @@ uv run drive-synapsis-config
 
 The wizard will:
 1.  Ask for the path to your downloaded `client_secret.json`.
-2.  Move it to the secure directory `~/.drive-synapsis/`.
+2.  Move it to the secure directory `~/.config/drive-synapsis/`.
 3.  Launch the browser to authenticate you with Google.
 4.  Automatically update the configuration file for your chosen AI client (Gemini CLI, Claude Code, or OpenCode).
 
@@ -178,7 +178,7 @@ If this works, your installation is complete! 🎉
 **Problem**: `token.json` not found or invalid
 
 **Solution**:
-1. Delete the existing `token.json` file (in `~/.drive-synapsis/`)
+1. Delete the existing `token.json` file (in `~/.config/drive-synapsis/`)
 2. Run the authentication flow again: `uv run src/drive_synapsis/main_server.py`
 3. Complete the browser authorization
 
@@ -195,7 +195,7 @@ If this works, your installation is complete! 🎉
 **Solutions**:
 - Verify `uv` or `python` is in your system PATH
 - Use absolute paths in configuration
-- Check that `client_secret.json` and `token.json` exist in `~/.drive-synapsis/`
+- Check that `client_secret.json` and `token.json` exist in `~/.config/drive-synapsis/`
 - Ensure the virtual environment has all dependencies installed
 
 ### Permission Errors
@@ -222,7 +222,7 @@ If this works, your installation is complete! 🎉
 
 **Solution**:
 - Verify the file is named exactly `client_secret.json`
-- Ensure it's in `~/.drive-synapsis/`
+- Ensure it's in `~/.config/drive-synapsis/`
 - Check file permissions (must be readable)
 
 ## Enterprise Deployment (Google Workspace)

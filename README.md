@@ -330,10 +330,10 @@ This server uses a **"Bring Your Own Keys"** model. You need to create your own 
    - Google Sheets API
 4. Create OAuth 2.0 credentials (Desktop application)
 5. Download the credentials as `client_secret.json`
-6. Create `~/.drive-synapsis/` and move `client_secret.json` there:
+6. Create `~/.config/drive-synapsis/` and move `client_secret.json` there:
    ```bash
-   mkdir -p ~/.drive-synapsis
-   mv ~/Downloads/client_secret.json ~/.drive-synapsis/
+   mkdir -p ~/.config/drive-synapsis
+   mv ~/Downloads/client_secret.json ~/.config/drive-synapsis/
    ```
 
 > See [INSTALLATION.md](INSTALLATION.md) for detailed step-by-step instructions.
@@ -360,7 +360,7 @@ If you prefer to configure manually, follow the steps in [INSTALLATION.md](INSTA
 ```bash
 # Create credentials directory
 mkdir credentials
-cp ~/.drive-synapsis/client_secret.json ~/.drive-synapsis/token.json credentials/
+cp ~/.config/drive-synapsis/client_secret.json ~/.config/drive-synapsis/token.json credentials/
 
 # Build and run
 docker compose up -d
@@ -495,7 +495,7 @@ MIT License - see LICENSE file for details
 Drive Synapsis uses **OAuth 2.1 with PKCE** for secure authentication:
 
 - **Session Persistence**: OAuth states persist to disk, surviving server restarts during auth flows
-- **Multi-User Support**: Credentials stored per-user in `~/.drive-synapsis/credentials/`
+- **Multi-User Support**: Credentials stored per-user in `~/.config/drive-synapsis/credentials/`
 - **Automatic Token Refresh**: Tokens refresh automatically when expired
 - **PKCE Security**: Proof Key for Code Exchange prevents authorization code interception
 

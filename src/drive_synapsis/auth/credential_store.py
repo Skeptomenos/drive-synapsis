@@ -50,7 +50,7 @@ class LocalDirectoryCredentialStore(CredentialStore):
 
         Args:
             base_dir: Base directory for credential files. If None, uses
-                     ~/.drive-synapsis/credentials
+                     ~/.config/drive-synapsis/credentials
         """
         if base_dir is None:
             env_dir = os.getenv("DRIVE_SYNAPSIS_CREDENTIALS_DIR")
@@ -58,7 +58,9 @@ class LocalDirectoryCredentialStore(CredentialStore):
                 base_dir = os.path.join(env_dir, "credentials")
             else:
                 home_dir = os.path.expanduser("~")
-                base_dir = os.path.join(home_dir, ".drive-synapsis", "credentials")
+                base_dir = os.path.join(
+                    home_dir, ".config", "drive-synapsis", "credentials"
+                )
 
         self.base_dir = base_dir
         self._ensure_dir_exists()

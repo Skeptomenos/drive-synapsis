@@ -112,7 +112,7 @@ For detailed instructions on using specific tools (PTY, Workspace MCP, Drive Syn
 
 ## Constraints
 
-- **Credential Path:** `~/.drive-synapsis/` (Strict)
+- **Credential Path:** `~/.config/drive-synapsis/` (Strict)
 - **Safety:** All destructive operations must support `dry_run` (default: True).
 
 ## State Files

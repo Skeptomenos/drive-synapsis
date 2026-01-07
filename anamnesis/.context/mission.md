@@ -12,7 +12,7 @@ Build a robust, production-grade Model Context Protocol (MCP) server that empowe
 ## Evolution
 
 - 2024-12: Initial release with core MCP tools (Search, Read, Sync).
-- 2025-01: Added interactive setup wizard and `~/.drive-synapsis` credential management.
+- 2025-01: Added interactive setup wizard and `~/.config/drive-synapsis` credential management.
 
 ## Success Looks Like
 
@@ -23,7 +23,7 @@ Build a robust, production-grade Model Context Protocol (MCP) server that empowe
 
 ## Constraints
 
-- **Credential Security:** Secrets MUST be stored in `~/.drive-synapsis`, not in the project root.
+- **Credential Security:** Secrets MUST be stored in `~/.config/drive-synapsis`, not in the project root.
 - **BYOK:** "Bring Your Own Keys" model; we do not host a central auth service.
 - **Dependencies:** Minimize heavy dependencies; use `uv` for package management.
 

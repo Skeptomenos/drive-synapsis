@@ -27,9 +27,9 @@ def _get_oauth_states_file_path() -> str:
     else:
         home_dir = os.path.expanduser("~")
         if home_dir and home_dir != "~":
-            base_dir = os.path.join(home_dir, ".drive-synapsis")
+            base_dir = os.path.join(home_dir, ".config", "drive-synapsis")
         else:
-            base_dir = os.path.join(os.getcwd(), ".drive-synapsis")
+            base_dir = os.path.join(os.getcwd(), ".config", "drive-synapsis")
 
     if not os.path.exists(base_dir):
         os.makedirs(base_dir, exist_ok=True)

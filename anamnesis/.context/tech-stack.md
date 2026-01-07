@@ -8,7 +8,7 @@
 ## Google Integration
 - **Auth:** `google-auth-oauthlib` (OAuth 2.0 flow)
 - **API Client:** `google-api-python-client` (Drive v3, Docs v1, Sheets v4)
-- **Credential Storage:** Local filesystem at `~/.drive-synapsis/` (JSON)
+- **Credential Storage:** Local filesystem at `~/.config/drive-synapsis/` (JSON)
 
 ## Architecture
 - **Server (`src/drive_synapsis/server`):**

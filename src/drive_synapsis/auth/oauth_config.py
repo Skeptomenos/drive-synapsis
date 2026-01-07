@@ -27,7 +27,7 @@ class OAuthConfig:
 
         # Credentials directory
         self.credentials_dir = os.path.expanduser(
-            os.getenv("DRIVE_SYNAPSIS_CREDENTIALS_DIR", "~/.drive-synapsis")
+            os.getenv("DRIVE_SYNAPSIS_CREDENTIALS_DIR", "~/.config/drive-synapsis")
         )
 
         # OAuth client configuration (from environment or client_secret.json)

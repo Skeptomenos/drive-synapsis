@@ -14,7 +14,7 @@ DRIVE_SYNAPSIS_BASE_URI = os.getenv("DRIVE_SYNAPSIS_BASE_URI", "http://localhost
 
 # Credentials directory
 CREDENTIALS_DIR = os.path.expanduser(
-    os.getenv("DRIVE_SYNAPSIS_CREDENTIALS_DIR", "~/.drive-synapsis")
+    os.getenv("DRIVE_SYNAPSIS_CREDENTIALS_DIR", "~/.config/drive-synapsis")
 )
 
 # Transport mode (stdio or streamable-http)
